@@ -1,4 +1,7 @@
-"""Exp29: exp23 rule minus MES (largest loser: -9.0k, and ES downside breaks fade per exp12
+"""Exp30: exp23 streams (MES MNQ M2K MCL, cap 3, both sides) + MILD expansion gate 0.9x
+trailing 20-session median 30m range: drop only the quietest opens (noise) while keeping
+~2.5 trades/day for variance.
+Exp29 note: exp23 rule minus MES (largest loser: -9.0k, and ES downside breaks fade per exp12
 screen while upside edge is thin at micro cost/vol). Streams: MNQ M2K MCL.
 Exp28 note: exp23 rule (no expansion gate, cap 3, both sides, gap abort) on six post-2019
 micros across three classes: MNQ MES MYM M2K (US equity), MCL (crude), MHG (copper 2022+).
@@ -26,10 +29,10 @@ EXIT_AT = 14 * 3600 + 55 * 60      # flat target at 14:55 bar
 RNG_LO, RNG_HI = 30600, 34200      # range bars 08:30..09:00 CT
 MIN_RANGE_BARS = 25
 MAX_RISK = 300.0
-PV = {'MNQ': 2.0, 'M2K': 5.0, 'MCL': 100.0}
+PV = {'MES': 5.0, 'MNQ': 2.0, 'M2K': 5.0, 'MCL': 100.0}
 LONG_ONLY = set()
 CAP = 3
-EXPAND = 0.0   # gate disabled
+EXPAND = 0.9
 
 def signals(panel):
     result = {}
