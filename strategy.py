@@ -1,4 +1,5 @@
-"""Exp18: MNQ + MCL only (exp17 rule). MES/MYM dropped: same US large-cap underlying as
+"""Exp20: exp18 + up to 2 attempts/day (re-entry after a stop, either side) for variance.
+Exp18: MNQ + MCL only (exp17 rule). MES/MYM dropped: same US large-cap underlying as
 MNQ (correlated, not independent) and higher cost/vol; MGC dropped: frequent missing minutes.
 Previous header (exp16): 30m ORB both sides, portfolio of liquid micros (equity MNQ MES MYM, energy MCL,
 metals MGC). Same rule everywhere; point values are contract metadata.
@@ -29,19 +30,19 @@ def signals(panel):
         high = df.high.to_numpy(); low = df.low.to_numpy(); close = df.close.to_numpy()
         sec = df.ct_sec.to_numpy(); sess = df.session.astype(str).to_numpy()
         t = df.index.as_unit('ns').asi8
-        pos = 0; stop_px = 0.0; entered = False
+        pos = 0; stop_px = 0.0; entered = False; tries = 0
         r_hi = -1e18; r_lo = 1e18; r_seen = 0
         for i in range(n):
             s = sec[i]
             if i == 0 or sess[i - 1] != sess[i]:
                 r_hi, r_lo, r_seen = -1e18, 1e18, 0
-                pos = 0; stop_px = 0.0; entered = False
+                pos = 0; stop_px = 0.0; entered = False; tries = 0
             if pos and t[i] - t[i - 1] != 60_000_000_000:
                 pos = 0                          # gap while holding: evaluator flattened; stay flat
             if RNG_LO <= s < RNG_HI:
                 r_hi = max(r_hi, high[i]); r_lo = min(r_lo, low[i]); r_seen += 1
             if pos == 0:
-                if entered or r_seen < MIN_RANGE_BARS or s < ENTRY_AFTER or s >= EXIT_AT:
+                if tries >= 2 or r_seen < MIN_RANGE_BARS or s < ENTRY_AFTER or s >= EXIT_AT:
                     continue
                 if close[i] > r_hi:
                     dirn, stop_px = 1, r_lo
@@ -54,7 +55,7 @@ def signals(panel):
                     continue
                 sz = int(min(CAP, MAX_RISK / (dist * PV[symbol])))
                 if sz >= 1:
-                    pos = dirn * sz; entered = True
+                    pos = dirn * sz; tries += 1
                     out[i] = pos
             else:
                 if s >= EXIT_AT or (pos > 0 and low[i] <= stop_px) or (pos < 0 and high[i] >= stop_px):
