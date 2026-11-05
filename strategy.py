@@ -1,8 +1,7 @@
-"""Exp22: 30m ORB both sides, one attempt/day, three post-2019 micros from three classes:
-MNQ (US tech equity), MCL (crude), MHG (copper, from 2022). Stop = opposite range extreme,
-$300 risk, cap 8/symbol. Mechanism: open-hour information assimilation -> continuation;
-cross-class streams are less correlated than stacked equity micros (exp21 failure).
-Gap while holding: evaluator flattens -> stay flat rest of session.
+"""Exp23: exp4 rule (30m ORB both sides, 1 attempt/day, stop opposite extreme, $300 risk,
+cap 3/symbol) on MES MNQ M2K + MCL, with gap-abort while holding.
+exp4 was the only gate-passing variant (score .016); MCL added as a non-equity stream
+(positive in exp18/exp21, 2021-23). Gap abort removes evaluator re-entry churn (M2K gaps).
 """
 import numpy as np
 
@@ -11,9 +10,9 @@ EXIT_AT = 14 * 3600 + 55 * 60      # flat target at 14:55 bar
 RNG_LO, RNG_HI = 30600, 34200      # range bars 08:30..09:00 CT
 MIN_RANGE_BARS = 25
 MAX_RISK = 300.0
-PV = {'MNQ': 2.0, 'MCL': 100.0, 'MHG': 2500.0}
+PV = {'MES': 5.0, 'MNQ': 2.0, 'M2K': 5.0, 'MCL': 100.0}
 LONG_ONLY = set()
-CAP = 8
+CAP = 3
 
 def signals(panel):
     result = {}
