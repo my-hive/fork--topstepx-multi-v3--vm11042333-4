@@ -1,4 +1,4 @@
-"""Exp6: Cross-asset first-hour range breakout (research screen across classes).
+"""Exp8: Cross-asset first-hour range breakout (research screen across classes).
 
 Mechanism: US cash-open hour (08:30-09:30 CT) concentrates macro data and
 order flow for all CME products; a break of that hour's range afterwards
@@ -16,18 +16,21 @@ ENTRY_END = 13 * 3600
 EXIT_AT = 14 * 3600 + 55 * 60
 MIN_BARS = 40
 MAX_RISK = 300.0
-PV = {'MES': 5.0, 'MNQ': 2.0, 'MYM': 0.5, 'M2K': 5.0, 'MGC': 10.0, 'SIL': 1000.0,
-      'QM': 500.0, 'M6E': 12500.0, 'M6A': 10000.0, 'M6B': 6250.0, 'ZN': 1000.0, 'ZT': 2000.0}
+# (dollars/point, evaluator standard-equivalent weight)
+SPEC = {'MES': (5.0, .1), 'MNQ': (2.0, .1), 'MYM': (0.5, .1), 'M2K': (5.0, .1), 'MGC': (10.0, .1),
+        'SIL': (1000.0, .2), 'M6E': (12500.0, .1), 'M6A': (10000.0, .1), 'M6B': (6250.0, .1)}
+BUDGET = 4.9   # aggregate exposure cap 5.0, split equally over traded symbols present
 
 def signals(panel):
     result = {}
     for symbol, df in panel.items():
         n = len(df)
         out = np.zeros(n, dtype=np.int64)
-        if symbol not in PV:
+        if symbol not in SPEC:
             result[symbol] = out
             continue
-        pv = PV[symbol]
+        pv, w = SPEC[symbol]
+        cap = int(BUDGET / len(SPEC) / w)
         high = df.high.to_numpy(); low = df.low.to_numpy(); close = df.close.to_numpy()
         sec = df.ct_sec.to_numpy(); sess = df.session.astype(str).to_numpy()
         pos = 0; stop = 0.0; done = False
@@ -54,7 +57,7 @@ def signals(panel):
             else:
                 continue
             done = True
-            size = int(min(5, MAX_RISK / (abs(close[i] - stop) * pv)))
+            size = int(min(cap, MAX_RISK / (abs(close[i] - stop) * pv)))
             if size >= 1:
                 pos = d * size
                 out[i] = pos
