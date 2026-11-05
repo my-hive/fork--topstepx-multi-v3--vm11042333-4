@@ -1,4 +1,10 @@
-"""Exp25: exp23 minus M2K (illiquid: 15-150 missing ON minutes/day, worst cost/vol of equity micros;
+"""Exp27: exp26 (expansion gate) with cap 8 so each trade uses the full $300 risk budget
+(tight-range days previously under-sized). Same gates, same economics per unit risk.
+Exp26 note: exp23 (MES MNQ M2K MCL, cap 3, both sides) + volatility-expansion gate:
+trade only when today 30m range >= 1.2 x trailing 20-session median range.
+Rationale: ORB continuation is informative when the open hour shows abnormal
+participation/vol expansion (news-driven flow); quiet opens are noise.
+Exp25 note: exp23 minus M2K (illiquid: 15-150 missing ON minutes/day, worst cost/vol of equity micros;
 flagged a priori in exp2). Both sides everywhere.
 Exp24 note: exp23 with MES long-only. Screen exp12 (full ES, 2010-18 AND 2019-23): ES downside
 ORB breaks lose (-0.047R/-0.042R gross), upside continue (+0.031R/+0.055R).
@@ -14,9 +20,10 @@ EXIT_AT = 14 * 3600 + 55 * 60      # flat target at 14:55 bar
 RNG_LO, RNG_HI = 30600, 34200      # range bars 08:30..09:00 CT
 MIN_RANGE_BARS = 25
 MAX_RISK = 300.0
-PV = {'MES': 5.0, 'MNQ': 2.0, 'MCL': 100.0}
+PV = {'MES': 5.0, 'MNQ': 2.0, 'M2K': 5.0, 'MCL': 100.0}
 LONG_ONLY = set()
-CAP = 3
+CAP = 8
+EXPAND = 1.2
 
 def signals(panel):
     result = {}
@@ -31,17 +38,22 @@ def signals(panel):
         t = df.index.as_unit('ns').asi8
         pos = 0; stop_px = 0.0; entered = False; tries = 0
         r_hi = -1e18; r_lo = 1e18; r_seen = 0
+        widths = []
         for i in range(n):
             s = sec[i]
             if i == 0 or sess[i - 1] != sess[i]:
-                r_hi, r_lo, r_seen = -1e18, 1e18, 0
+                if r_seen >= MIN_RANGE_BARS and np.isfinite(r_hi):
+                    widths.append(r_hi - r_lo)
                 pos = 0; stop_px = 0.0; entered = False; tries = 0
+                r_hi, r_lo, r_seen = -1e18, np.inf, 0
             if pos and t[i] - t[i - 1] != 60_000_000_000:
                 pos = 0                          # gap while holding: evaluator flattened; stay flat
             if RNG_LO <= s < RNG_HI:
                 r_hi = max(r_hi, high[i]); r_lo = min(r_lo, low[i]); r_seen += 1
             if pos == 0:
                 if tries >= 1 or r_seen < MIN_RANGE_BARS or s < ENTRY_AFTER or s >= EXIT_AT:
+                    continue
+                if len(widths) >= 20 and (r_hi - r_lo) < EXPAND * float(np.median(widths[-20:])):
                     continue
                 if close[i] > r_hi:
                     dirn, stop_px = 1, r_lo
