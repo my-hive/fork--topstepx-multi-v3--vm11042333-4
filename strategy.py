@@ -1,4 +1,6 @@
-"""Exp28: exp23 rule (no expansion gate, cap 3, both sides, gap abort) on six post-2019
+"""Exp29: exp23 rule minus MES (largest loser: -9.0k, and ES downside breaks fade per exp12
+screen while upside edge is thin at micro cost/vol). Streams: MNQ M2K MCL.
+Exp28 note: exp23 rule (no expansion gate, cap 3, both sides, gap abort) on six post-2019
 micros across three classes: MNQ MES MYM M2K (US equity), MCL (crude), MHG (copper 2022+).
 More concurrent $300 streams => higher daily variance, which the 30-session +$3000
 target rewards (exp23 sd 427 vs exp26 sd 166).
@@ -24,7 +26,7 @@ EXIT_AT = 14 * 3600 + 55 * 60      # flat target at 14:55 bar
 RNG_LO, RNG_HI = 30600, 34200      # range bars 08:30..09:00 CT
 MIN_RANGE_BARS = 25
 MAX_RISK = 300.0
-PV = {'MES': 5.0, 'MNQ': 2.0, 'M2K': 5.0, 'MYM': 0.5, 'MCL': 100.0, 'MHG': 2500.0}
+PV = {'MNQ': 2.0, 'M2K': 5.0, 'MCL': 100.0}
 LONG_ONLY = set()
 CAP = 3
 EXPAND = 0.0   # gate disabled
