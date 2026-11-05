@@ -1,8 +1,7 @@
-"""Exp14: LONG-ONLY ORB on MNQ only, full $300 risk via stop = 0.5 x range width.
-MNQ has lowest stressed cost per unit of 1-min risk among equity contracts (~0.035R
-vs MES ~0.1R); tighter stop deploys the whole risk budget (more contracts).
-Screen (exp12) showed downside ORB breaks fade in both 2010-18 and 2019-23 on ES;
-upside breaks continue (equity drift, dealer/dip-buying flows absorb sells).
+"""Exp15: 30m ORB both sides, MNQ only, stop = opposite range extreme, full $300 risk (cap 20).
+Screen exp12: NQ ORB gross +0.062R long / +0.029R short in 2019-23, MNQ stressed cost
+~0.035R at range-width stop; MES short side negative both periods, M2K illiquid.
+exp4 used only ~1/3 of risk budget (cap 3) -> raise cap so each trade risks ~$300.
 
 Literature-grounded intraday momentum: establish 30-minute opening range
 (08:30-09:00 CT); enter on first 1-min close beyond range extreme at/after
@@ -20,8 +19,7 @@ RNG_LO, RNG_HI = 30600, 34200      # range bars 08:30..09:00 CT
 MIN_RANGE_BARS = 25
 MAX_RISK = 300.0
 PV = {'MNQ': 2.0}
-STOP_FRAC = 0.5
-CAP = 20   # 2.0 standard equivalents
+CAP = 20   # 2.0 standard equivalents, well inside 5.0 exposure cap
 
 def signals(panel):
     result = {}
@@ -46,7 +44,9 @@ def signals(panel):
                 if entered or r_seen < MIN_RANGE_BARS or s < ENTRY_AFTER or s >= EXIT_AT:
                     continue
                 if close[i] > r_hi:
-                    dirn, stop_px = 1, max(r_lo, close[i] - STOP_FRAC * (r_hi - r_lo))
+                    dirn, stop_px = 1, r_lo
+                elif close[i] < r_lo:
+                    dirn, stop_px = -1, r_hi
                 else:
                     continue
                 dist = abs(close[i] - stop_px)
