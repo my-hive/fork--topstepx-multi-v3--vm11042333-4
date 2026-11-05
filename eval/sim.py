@@ -342,6 +342,9 @@ def main():
     report['stressed'].pop('ledger')
     report['base'].pop('ledger')
     Path(args.output).write_text(json.dumps(report, indent=2, allow_nan=False) + '\n')
+    print(f"score: {report['stressed']['score']:.6f}")
+    for year, stats in report['stressed']['yearly'].items():
+        print(f"year {year}: {json.dumps(stats)}")
     print(json.dumps({'score': report['stressed']['score'], 'output': args.output}))
 
 

@@ -120,6 +120,11 @@ def check():
         import json
         report = json.loads((root/'report.json').read_text())
         assert report['schema_version'] == 1 and len((root/'fills.jsonl').read_text().splitlines()) == 4
+    reversal = run_days({'MES': frame(prices=[100., 100., 105., 110.])},
+                        {'MES': np.array([1, -1, 0, 0])}, stressed=False, ledger=True)
+    ledger_net = sum(f['realized_pnl'] - f['commission'] for f in reversal['ledger'])
+    assert abs(reversal['days'][0]['pnl'] - ledger_net) < 1e-8
+    assert abs(ledger_net - (-8.0)) < 1e-8
     print('multiasset simulator self-check ok')
 
 
