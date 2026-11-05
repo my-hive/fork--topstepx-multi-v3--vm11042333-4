@@ -1,4 +1,6 @@
-"""Exp23: exp4 rule (30m ORB both sides, 1 attempt/day, stop opposite extreme, $300 risk,
+"""Exp24: exp23 with MES long-only. Screen exp12 (full ES, 2010-18 AND 2019-23): ES downside
+ORB breaks lose (-0.047R/-0.042R gross), upside continue (+0.031R/+0.055R).
+Exp23: exp4 rule (30m ORB both sides, 1 attempt/day, stop opposite extreme, $300 risk,
 cap 3/symbol) on MES MNQ M2K + MCL, with gap-abort while holding.
 exp4 was the only gate-passing variant (score .016); MCL added as a non-equity stream
 (positive in exp18/exp21, 2021-23). Gap abort removes evaluator re-entry churn (M2K gaps).
@@ -11,7 +13,7 @@ RNG_LO, RNG_HI = 30600, 34200      # range bars 08:30..09:00 CT
 MIN_RANGE_BARS = 25
 MAX_RISK = 300.0
 PV = {'MES': 5.0, 'MNQ': 2.0, 'M2K': 5.0, 'MCL': 100.0}
-LONG_ONLY = set()
+LONG_ONLY = {'MES'}
 CAP = 3
 
 def signals(panel):
