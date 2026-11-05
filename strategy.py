@@ -1,9 +1,7 @@
-"""Exp21: 30m ORB, one attempt/day, post-2019 liquid micros only: MNQ MES MYM M2K (US equity)
-+ MCL (crude). Stop = opposite range extreme, $300 risk, cap 8/symbol (4.0 std eq max).
-Equity side: LONG ONLY (screen exp12: downside ORB breaks fade in ES/NQ both 2010-18 and
-2019-23 - dip-buying / dealer flows; upside breaks continue with equity risk premium).
-MCL: both sides (no structural drift in crude; exp18 MCL both sides net +2.0k).
-Several concurrent $300 streams raise daily variance needed for 30-session target.
+"""Exp22: 30m ORB both sides, one attempt/day, three post-2019 micros from three classes:
+MNQ (US tech equity), MCL (crude), MHG (copper, from 2022). Stop = opposite range extreme,
+$300 risk, cap 8/symbol. Mechanism: open-hour information assimilation -> continuation;
+cross-class streams are less correlated than stacked equity micros (exp21 failure).
 Gap while holding: evaluator flattens -> stay flat rest of session.
 """
 import numpy as np
@@ -13,8 +11,8 @@ EXIT_AT = 14 * 3600 + 55 * 60      # flat target at 14:55 bar
 RNG_LO, RNG_HI = 30600, 34200      # range bars 08:30..09:00 CT
 MIN_RANGE_BARS = 25
 MAX_RISK = 300.0
-PV = {'MNQ': 2.0, 'MES': 5.0, 'MYM': 0.5, 'M2K': 5.0, 'MCL': 100.0}
-LONG_ONLY = {'MNQ', 'MES', 'MYM', 'M2K'}
+PV = {'MNQ': 2.0, 'MCL': 100.0, 'MHG': 2500.0}
+LONG_ONLY = set()
 CAP = 8
 
 def signals(panel):
