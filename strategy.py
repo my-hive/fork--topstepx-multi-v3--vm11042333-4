@@ -1,4 +1,6 @@
-"""Exp17 (exp16 + gap-abort only while holding): 30m ORB both sides, portfolio of liquid micros (equity MNQ MES MYM, energy MCL,
+"""Exp18: MNQ + MCL only (exp17 rule). MES/MYM dropped: same US large-cap underlying as
+MNQ (correlated, not independent) and higher cost/vol; MGC dropped: frequent missing minutes.
+Previous header (exp16): 30m ORB both sides, portfolio of liquid micros (equity MNQ MES MYM, energy MCL,
 metals MGC). Same rule everywhere; point values are contract metadata.
 Mechanism: open-hour information flow -> directional continuation; several weakly
 correlated $300-risk streams raise daily variance/edge vs single market (exp15 sd 164).
@@ -13,7 +15,7 @@ EXIT_AT = 14 * 3600 + 55 * 60      # flat target at 14:55 bar
 RNG_LO, RNG_HI = 30600, 34200      # range bars 08:30..09:00 CT
 MIN_RANGE_BARS = 25
 MAX_RISK = 300.0
-PV = {'MNQ': 2.0, 'MES': 5.0, 'MYM': 0.5, 'MCL': 100.0, 'MGC': 10.0}
+PV = {'MNQ': 2.0, 'MCL': 100.0}
 CAP = 8
 
 def signals(panel):
