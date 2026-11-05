@@ -1,4 +1,6 @@
-"""Exp24: exp23 with MES long-only. Screen exp12 (full ES, 2010-18 AND 2019-23): ES downside
+"""Exp25: exp23 minus M2K (illiquid: 15-150 missing ON minutes/day, worst cost/vol of equity micros;
+flagged a priori in exp2). Both sides everywhere.
+Exp24 note: exp23 with MES long-only. Screen exp12 (full ES, 2010-18 AND 2019-23): ES downside
 ORB breaks lose (-0.047R/-0.042R gross), upside continue (+0.031R/+0.055R).
 Exp23: exp4 rule (30m ORB both sides, 1 attempt/day, stop opposite extreme, $300 risk,
 cap 3/symbol) on MES MNQ M2K + MCL, with gap-abort while holding.
@@ -12,8 +14,8 @@ EXIT_AT = 14 * 3600 + 55 * 60      # flat target at 14:55 bar
 RNG_LO, RNG_HI = 30600, 34200      # range bars 08:30..09:00 CT
 MIN_RANGE_BARS = 25
 MAX_RISK = 300.0
-PV = {'MES': 5.0, 'MNQ': 2.0, 'M2K': 5.0, 'MCL': 100.0}
-LONG_ONLY = {'MES'}
+PV = {'MES': 5.0, 'MNQ': 2.0, 'MCL': 100.0}
+LONG_ONLY = set()
 CAP = 3
 
 def signals(panel):
