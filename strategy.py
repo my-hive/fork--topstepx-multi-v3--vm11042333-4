@@ -1,4 +1,6 @@
-"""Exp13: LONG-ONLY opening-range breakout on MES MNQ (M2K dropped: illiquid, ON gaps).
+"""Exp14: LONG-ONLY ORB on MNQ only, full $300 risk via stop = 0.5 x range width.
+MNQ has lowest stressed cost per unit of 1-min risk among equity contracts (~0.035R
+vs MES ~0.1R); tighter stop deploys the whole risk budget (more contracts).
 Screen (exp12) showed downside ORB breaks fade in both 2010-18 and 2019-23 on ES;
 upside breaks continue (equity drift, dealer/dip-buying flows absorb sells).
 
@@ -17,7 +19,9 @@ EXIT_AT = 14 * 3600 + 55 * 60      # flat target at 14:55 bar
 RNG_LO, RNG_HI = 30600, 34200      # range bars 08:30..09:00 CT
 MIN_RANGE_BARS = 25
 MAX_RISK = 300.0
-PV = {'MES': 5.0, 'MNQ': 2.0}
+PV = {'MNQ': 2.0}
+STOP_FRAC = 0.5
+CAP = 20   # 2.0 standard equivalents
 
 def signals(panel):
     result = {}
@@ -42,13 +46,13 @@ def signals(panel):
                 if entered or r_seen < MIN_RANGE_BARS or s < ENTRY_AFTER or s >= EXIT_AT:
                     continue
                 if close[i] > r_hi:
-                    dirn, stop_px = 1, r_lo
+                    dirn, stop_px = 1, max(r_lo, close[i] - STOP_FRAC * (r_hi - r_lo))
                 else:
                     continue
                 dist = abs(close[i] - stop_px)
                 if dist <= 0:
                     continue
-                sz = int(min(3, MAX_RISK / (dist * PV[symbol])))
+                sz = int(min(CAP, MAX_RISK / (dist * PV[symbol])))
                 if sz >= 1:
                     pos = dirn * sz; entered = True
                     out[i] = pos
