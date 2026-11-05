@@ -1,13 +1,10 @@
-"""Exp20: exp18 + up to 2 attempts/day (re-entry after a stop, either side) for variance.
-Exp18: MNQ + MCL only (exp17 rule). MES/MYM dropped: same US large-cap underlying as
-MNQ (correlated, not independent) and higher cost/vol; MGC dropped: frequent missing minutes.
-Previous header (exp16): 30m ORB both sides, portfolio of liquid micros (equity MNQ MES MYM, energy MCL,
-metals MGC). Same rule everywhere; point values are contract metadata.
-Mechanism: open-hour information flow -> directional continuation; several weakly
-correlated $300-risk streams raise daily variance/edge vs single market (exp15 sd 164).
-Gap abort: evaluator flattens on any missing minute; after a gap the symbol stays
-flat for the session (prevents re-entry churn seen in exp2/exp8).
-Per-symbol cap 8 contracts (0.8 std eq) x 5 symbols = 4.0 <= 5.0 exposure.
+"""Exp21: 30m ORB, one attempt/day, post-2019 liquid micros only: MNQ MES MYM M2K (US equity)
++ MCL (crude). Stop = opposite range extreme, $300 risk, cap 8/symbol (4.0 std eq max).
+Equity side: LONG ONLY (screen exp12: downside ORB breaks fade in ES/NQ both 2010-18 and
+2019-23 - dip-buying / dealer flows; upside breaks continue with equity risk premium).
+MCL: both sides (no structural drift in crude; exp18 MCL both sides net +2.0k).
+Several concurrent $300 streams raise daily variance needed for 30-session target.
+Gap while holding: evaluator flattens -> stay flat rest of session.
 """
 import numpy as np
 
@@ -16,7 +13,8 @@ EXIT_AT = 14 * 3600 + 55 * 60      # flat target at 14:55 bar
 RNG_LO, RNG_HI = 30600, 34200      # range bars 08:30..09:00 CT
 MIN_RANGE_BARS = 25
 MAX_RISK = 300.0
-PV = {'MNQ': 2.0, 'MCL': 100.0}
+PV = {'MNQ': 2.0, 'MES': 5.0, 'MYM': 0.5, 'M2K': 5.0, 'MCL': 100.0}
+LONG_ONLY = {'MNQ', 'MES', 'MYM', 'M2K'}
 CAP = 8
 
 def signals(panel):
@@ -42,11 +40,11 @@ def signals(panel):
             if RNG_LO <= s < RNG_HI:
                 r_hi = max(r_hi, high[i]); r_lo = min(r_lo, low[i]); r_seen += 1
             if pos == 0:
-                if tries >= 2 or r_seen < MIN_RANGE_BARS or s < ENTRY_AFTER or s >= EXIT_AT:
+                if tries >= 1 or r_seen < MIN_RANGE_BARS or s < ENTRY_AFTER or s >= EXIT_AT:
                     continue
                 if close[i] > r_hi:
                     dirn, stop_px = 1, r_lo
-                elif close[i] < r_lo:
+                elif close[i] < r_lo and symbol not in LONG_ONLY:
                     dirn, stop_px = -1, r_hi
                 else:
                     continue
